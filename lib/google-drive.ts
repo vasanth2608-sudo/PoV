@@ -131,6 +131,35 @@ export async function getEvent(eventId: string): Promise<EventConfig | null> {
   return JSON.parse(text) as EventConfig;
 }
 
+export async function listEvents(): Promise<EventConfig[]> {
+  const rootId = await ensureRootFolder();
+  const { drive } = getAuth();
+  const foldersRes = await drive.files.list({
+    q: `'${rootId}' in parents and mimeType = '${DRIVE_FOLDER_MIME}' and trashed = false`,
+    fields: "files(id,name,createdTime)",
+    pageSize: 200,
+    orderBy: "createdTime desc",
+  });
+
+  const folders = foldersRes.data.files || [];
+  const events = await Promise.all(
+    folders.map(async (folder) => {
+      if (!folder.id) return null;
+      const eventJson = await findFileByName(folder.id, "event.json");
+      if (!eventJson?.id) return null;
+
+      const content = await drive.files.get({ fileId: eventJson.id, alt: "media" }, { responseType: "text" });
+      const text = typeof content.data === "string" ? content.data : JSON.stringify(content.data);
+      const parsed = JSON.parse(text) as EventConfig;
+      return parsed;
+    })
+  );
+
+  return events
+    .filter((event): event is EventConfig => Boolean(event))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 export async function listEventPhotos(event: EventConfig): Promise<UploadRecord[]> {
   const { drive } = getAuth();
   const response = await drive.files.list({
@@ -187,6 +216,31 @@ export async function uploadPhoto(args: {
     webViewLink: response.data.webViewLink,
     createdTime: response.data.createdTime,
   } satisfies UploadRecord;
+}
+
+export async function getPhotoContent(fileId: string): Promise<{ bytes: Buffer; mimeType: string }> {
+  const { drive } = getAuth();
+  const metadata = await drive.files.get({
+    fileId,
+    fields: "id,mimeType",
+  });
+  if (!metadata.data.id) {
+    throw new Error("Photo not found.");
+  }
+
+  const media = await drive.files.get(
+    {
+      fileId,
+      alt: "media",
+    },
+    {
+      responseType: "arraybuffer",
+    }
+  );
+
+  const mimeType = metadata.data.mimeType || "application/octet-stream";
+  const bytes = Buffer.from(media.data as ArrayBuffer);
+  return { bytes, mimeType };
 }
 
 function formatUploadTimestamp(date: Date): string {

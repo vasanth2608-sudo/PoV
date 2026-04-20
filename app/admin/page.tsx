@@ -14,6 +14,14 @@ type CreatedEvent = {
   qrDataUrl: string;
 };
 
+type HistoryEvent = {
+  id: string;
+  title: string;
+  date?: string;
+  createdAt: string;
+  folderId: string;
+};
+
 export default function AdminPage() {
   const [adminPassword, setAdminPassword] = useState("");
   const [title, setTitle] = useState("");
@@ -24,6 +32,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<CreatedEvent | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryEvent[]>([]);
 
   const promptCount = useMemo(() => promptsText.split("\n").map((x) => x.trim()).filter(Boolean).length, [promptsText]);
 
@@ -53,10 +64,32 @@ export default function AdminPage() {
 
       const qrDataUrl = await QRCode.toDataURL(json.joinUrl, { width: 420, margin: 1 });
       setCreated({ ...json, qrDataUrl });
+      await fetchHistory();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchHistory() {
+    if (!adminPassword.trim()) {
+      setHistoryError("Enter admin password to load event history.");
+      return;
+    }
+    setHistoryLoading(true);
+    setHistoryError(null);
+    try {
+      const response = await fetch(`/api/events?adminPassword=${encodeURIComponent(adminPassword)}`, { cache: "no-store" });
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error || "Failed to load event history.");
+      }
+      setHistory(json.events || []);
+    } catch (err) {
+      setHistoryError(err instanceof Error ? err.message : "Failed to load event history.");
+    } finally {
+      setHistoryLoading(false);
     }
   }
 
@@ -168,6 +201,60 @@ export default function AdminPage() {
             )}
           </Card>
         </div>
+
+        <Card className="mt-6 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-semibold">Event history</h2>
+              <p className="mt-1 text-sm text-neutral-400">
+                {history.length} {history.length === 1 ? "event" : "events"} found
+              </p>
+            </div>
+            <Button variant="secondary" onClick={fetchHistory} disabled={historyLoading}>
+              {historyLoading ? "Loading..." : "Refresh history"}
+            </Button>
+          </div>
+
+          {historyError ? <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-200">{historyError}</div> : null}
+
+          {history.length === 0 ? (
+            <div className="mt-4 rounded-2xl border border-dashed border-white/10 p-4 text-sm text-neutral-500">
+              No events yet. Create your first event or click Refresh history after entering admin password.
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {history.map((event) => {
+                const joinUrl = `/join/${event.id}`;
+                const createdAt = new Date(event.createdAt);
+                const createdText = Number.isNaN(createdAt.getTime()) ? event.createdAt : createdAt.toLocaleString();
+                return (
+                  <div key={event.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <div className="text-lg font-medium text-neutral-100">{event.title}</div>
+                        <div className="mt-1 text-sm text-neutral-400">{event.date || "Date not set"}</div>
+                        <div className="mt-1 text-xs text-neutral-500">Created {createdText}</div>
+                      </div>
+                      <div className="text-xs text-neutral-500">{event.id}</div>
+                    </div>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <Link href={joinUrl} target="_blank" className="text-sm text-emerald-300 underline underline-offset-4">
+                        Open join page
+                      </Link>
+                      <a
+                        href={`https://drive.google.com/drive/folders/${event.folderId}`}
+                        target="_blank"
+                        className="text-sm text-emerald-300 underline underline-offset-4"
+                      >
+                        Open Drive folder
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
       </Container>
     </Shell>
   );

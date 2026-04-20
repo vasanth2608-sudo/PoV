@@ -174,12 +174,27 @@ export default function JoinEventPage() {
                   {eventData.photos.length === 0 ? (
                     <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">No photos yet. Be the first guest to upload.</div>
                   ) : (
-                    eventData.photos.map((photo) => (
-                      <a key={photo.fileId} href={photo.webViewLink || "#"} target="_blank" className="block rounded-2xl border border-white/10 bg-black/20 p-4 hover:bg-black/30">
-                        <div className="font-medium text-neutral-100">{photo.fileName}</div>
-                        <div className="mt-1 text-xs text-neutral-500">{photo.createdTime ? new Date(photo.createdTime).toLocaleString() : "Uploaded"}</div>
-                      </a>
-                    ))
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {eventData.photos.map((photo) => (
+                        <a
+                          key={photo.fileId}
+                          href={photo.webViewLink || `/api/photos/${photo.fileId}`}
+                          target="_blank"
+                          className="block overflow-hidden rounded-2xl border border-white/10 bg-black/20 hover:bg-black/30"
+                        >
+                          <img
+                            src={`/api/photos/${photo.fileId}`}
+                            alt={photo.fileName}
+                            loading="lazy"
+                            className="h-40 w-full object-cover"
+                          />
+                          <div className="p-3">
+                            <div className="truncate text-sm font-medium text-neutral-200">{photo.fileName}</div>
+                            <div className="mt-1 text-xs text-neutral-500">{photo.createdTime ? new Date(photo.createdTime).toLocaleString() : "Uploaded"}</div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
                   )}
                 </div>
               </Card>
