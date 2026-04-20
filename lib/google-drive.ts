@@ -159,7 +159,9 @@ export async function uploadPhoto(args: {
 }) {
   const { drive } = getAuth();
   const safeGuest = args.guestName ? makeSlug(args.guestName).slice(0, 24) : "guest";
-  const stampedName = `${safeGuest}-${Date.now()}-${args.fileName}`;
+  const ext = inferExtension(args.fileName, args.mimeType);
+  const timeStamp = formatUploadTimestamp(new Date());
+  const stampedName = `${safeGuest}-${timeStamp}-${randomId(4)}${ext}`;
 
   const response = await drive.files.create({
     requestBody: {
@@ -185,6 +187,42 @@ export async function uploadPhoto(args: {
     webViewLink: response.data.webViewLink,
     createdTime: response.data.createdTime,
   } satisfies UploadRecord;
+}
+
+function formatUploadTimestamp(date: Date): string {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+}
+
+function inferExtension(fileName: string, mimeType: string): string {
+  const directExt = extractFileExtension(fileName);
+  if (directExt) return directExt;
+
+  const mimeExtMap: Record<string, string> = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "image/heic": ".heic",
+    "image/heif": ".heif",
+    "image/gif": ".gif",
+  };
+
+  return mimeExtMap[mimeType.toLowerCase()] || ".jpg";
+}
+
+function extractFileExtension(fileName: string): string {
+  const trimmed = fileName.trim();
+  const lastDot = trimmed.lastIndexOf(".");
+  if (lastDot <= 0 || lastDot === trimmed.length - 1) return "";
+  const raw = trimmed.slice(lastDot + 1).toLowerCase();
+  if (!/^[a-z0-9]{1,8}$/.test(raw)) return "";
+  return `.${raw}`;
 }
 
 async function upsertJsonFile(args: { fileName: string; parentId: string; data: unknown }) {
