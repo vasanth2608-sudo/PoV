@@ -22,10 +22,13 @@ export async function POST(request: Request) {
       prompts: parsePrompts(parsed.promptsText),
     });
 
+    const requestOrigin = new URL(request.url).origin;
+    const baseUrl = requestOrigin || appUrl;
+
     return NextResponse.json({
       id: event.id,
       title: event.title,
-      joinUrl: `${appUrl}/join/${event.id}`,
+      joinUrl: `${baseUrl}/join/${event.id}`,
       folderUrl: `https://drive.google.com/drive/folders/${event.folderId}`,
     });
   } catch (error) {
