@@ -200,7 +200,6 @@ export default function JoinEventPage() {
 
               {currentPrompt ? (
                 <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-5">
-                  <div className="text-xs uppercase tracking-[0.3em] text-neutral-500">Random Prompt</div>
                   <div className="mt-3 text-lg font-medium">{currentPrompt}</div>
                   <Button variant="secondary" className="mt-4" onClick={() => setPromptIndex((v) => v + 1)}>
                     Next prompt
