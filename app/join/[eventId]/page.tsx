@@ -197,15 +197,6 @@ export default function JoinEventPage() {
                   <div className="text-xs text-neutral-500">{guestPhotos.length} / {target}</div>
                 </div>
               </div>
-
-              {currentPrompt ? (
-                <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-5">
-                  <div className="mt-3 text-lg font-medium">{currentPrompt}</div>
-                  <Button variant="secondary" className="mt-4" onClick={() => setPromptIndex((v) => v + 1)}>
-                    Next prompt
-                  </Button>
-                </div>
-              ) : null}
             </Card>
 
             <Card className="p-6">
