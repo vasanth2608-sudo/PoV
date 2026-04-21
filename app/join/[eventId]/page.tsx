@@ -88,6 +88,13 @@ export default function JoinEventPage() {
     }
   }
 
+  function handleCameraCapture(fileList: FileList | null) {
+    const incoming = Array.from(fileList || []);
+    if (incoming.length === 0) return;
+    // Keep adding newly captured photos so guests can take multiple shots before one upload.
+    setSelectedFiles((prev) => [...prev, ...incoming]);
+  }
+
   return (
     <Shell>
       <Container>
@@ -140,13 +147,16 @@ export default function JoinEventPage() {
                     <Input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Vasanth" />
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm text-neutral-400">Choose images</label>
-                    <Input type="file" multiple accept="image/*" onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))} />
+                    <label className="mb-2 block text-sm text-neutral-400">Take photo now</label>
+                    <Input type="file" accept="image/*" capture="environment" onChange={(e) => handleCameraCapture(e.target.files)} />
+                    <p className="mt-2 text-xs text-neutral-500">
+                      This opens your camera so guests can click photos on the spot. Tap again to capture more.
+                    </p>
                   </div>
 
                   {selectedFiles.length > 0 ? (
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      <div className="text-sm text-neutral-400">Selected files</div>
+                      <div className="text-sm text-neutral-400">Captured photos</div>
                       <div className="mt-3 space-y-2">
                         {selectedFiles.map((file) => (
                           <div key={`${file.name}-${file.size}`} className="flex items-center justify-between text-sm text-neutral-200">
@@ -155,6 +165,9 @@ export default function JoinEventPage() {
                           </div>
                         ))}
                       </div>
+                      <Button variant="secondary" className="mt-3" onClick={() => setSelectedFiles([])}>
+                        Clear captured photos
+                      </Button>
                     </div>
                   ) : null}
 
