@@ -11,6 +11,19 @@ type EventPayload = {
   photos: UploadRecord[];
 };
 
+function normalizeGuestKey(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function extractGuestKeyFromUpload(fileName: string): string | null {
+  const match = fileName.match(/^(.*)-\d{8}-\d{6}-[a-z0-9]{4}\.[a-z0-9]+$/i);
+  return match?.[1] || null;
+}
+
 export default function JoinEventPage() {
   const params = useParams<{ eventId: string }>();
   const eventId = params.eventId;
@@ -23,6 +36,7 @@ export default function JoinEventPage() {
   const [uploading, setUploading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [promptIndex, setPromptIndex] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -53,6 +67,16 @@ export default function JoinEventPage() {
   const uploadedCount = eventData?.photos.length ?? 0;
   const target = eventData?.event.photoTarget ?? 25;
   const progress = Math.min(100, Math.round((uploadedCount / target) * 100));
+  const guestKey = useMemo(() => normalizeGuestKey(guestName), [guestName]);
+  const guestPhotos = useMemo(() => {
+    if (!eventData || !guestKey) return [];
+    return eventData.photos.filter((photo) => extractGuestKeyFromUpload(photo.fileName) === guestKey);
+  }, [eventData, guestKey]);
+
+  function triggerCelebration() {
+    setShowCelebration(true);
+    setTimeout(() => setShowCelebration(false), 1200);
+  }
 
   async function handleUpload() {
     if (!eventData || selectedFiles.length === 0) return;
@@ -73,13 +97,14 @@ export default function JoinEventPage() {
         });
         const json = await response.json();
         if (!response.ok) throw new Error(json.error || `Failed to upload ${file.name}`);
+        triggerCelebration();
       }
 
       const refreshed = await fetch(`/api/events/${eventId}`);
       const refreshedJson = await refreshed.json();
       if (!refreshed.ok) throw new Error(refreshedJson.error || "Upload succeeded but refresh failed");
       setEventData(refreshedJson);
-      setSuccessMessage(`${selectedFiles.length} file(s) uploaded to Drive.`);
+      setSuccessMessage(`Awesome! ${selectedFiles.length} photo${selectedFiles.length > 1 ? "s" : ""} uploaded.`);
       setSelectedFiles([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
@@ -93,11 +118,37 @@ export default function JoinEventPage() {
     if (incoming.length === 0) return;
     // Keep adding newly captured photos so guests can take multiple shots before one upload.
     setSelectedFiles((prev) => [...prev, ...incoming]);
+    triggerCelebration();
   }
 
   return (
     <Shell>
       <Container>
+        {showCelebration ? (
+          <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+            {Array.from({ length: 36 }).map((_, index) => (
+              <span
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
+                className="absolute block h-2 w-2 animate-[confetti-fall_1.2s_ease-out_forwards] rounded-full"
+                style={{
+                  left: `${(index * 13) % 100}%`,
+                  top: "-10px",
+                  backgroundColor: ["#22c55e", "#f43f5e", "#3b82f6", "#f59e0b", "#a855f7", "#06b6d4"][index % 6],
+                  animationDelay: `${(index % 8) * 20}ms`,
+                  transform: `rotate(${index * 23}deg)`,
+                }}
+              />
+            ))}
+            <style jsx global>{`
+              @keyframes confetti-fall {
+                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
+              }
+            `}</style>
+          </div>
+        ) : null}
+
         {loading ? (
           <Card className="p-6">Loading event...</Card>
         ) : error ? (
@@ -182,24 +233,35 @@ export default function JoinEventPage() {
 
             <div className="space-y-6">
               <Card className="p-6">
-                <h2 className="text-2xl font-semibold">Live gallery</h2>
+                <h2 className="text-2xl font-semibold">Your live photo wall</h2>
+                <p className="mt-1 text-sm text-neutral-400">Only photos uploaded with your nickname appear here.</p>
                 <div className="mt-4 space-y-3">
-                  {eventData.photos.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">No photos yet. Be the first guest to upload.</div>
+                  {!guestKey ? (
+                    <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">
+                      Enter your nickname to start your personal photo wall.
+                    </div>
+                  ) : guestPhotos.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">
+                      No uploads from you yet. Capture your first shot and build your wall.
+                    </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      {eventData.photos.map((photo) => (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {guestPhotos.map((photo, index) => (
                         <a
                           key={photo.fileId}
                           href={photo.webViewLink || `/api/photos/${photo.fileId}`}
                           target="_blank"
-                          className="block overflow-hidden rounded-2xl border border-white/10 bg-black/20 hover:bg-black/30"
+                          className={`group block overflow-hidden rounded-2xl border border-white/10 bg-black/20 transition hover:-translate-y-0.5 hover:bg-black/30 ${
+                            index % 5 === 0 ? "sm:col-span-2" : ""
+                          }`}
                         >
                           <img
                             src={`/api/photos/${photo.fileId}`}
                             alt={photo.fileName}
                             loading="lazy"
-                            className="h-40 w-full object-cover"
+                            className={`w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
+                              index % 5 === 0 ? "h-52" : "h-36"
+                            }`}
                           />
                           <div className="p-3">
                             <div className="truncate text-sm font-medium text-neutral-200">{photo.fileName}</div>
