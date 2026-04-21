@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import { Camera } from "lucide-react";
 import { Container, Shell, Card, Input, Button } from "@/components/ui";
 import { EventConfig, UploadRecord } from "@/lib/types";
 import { formatBytes } from "@/lib/utils";
@@ -37,6 +38,7 @@ export default function JoinEventPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [promptIndex, setPromptIndex] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [cameraInputKey, setCameraInputKey] = useState(0);
 
   useEffect(() => {
     let ignore = false;
@@ -78,6 +80,23 @@ export default function JoinEventPage() {
     setTimeout(() => setShowCelebration(false), 1200);
   }
 
+  useEffect(() => {
+    if (!eventId) return;
+    const key = `pov-guest-name:${eventId}`;
+    const stored = window.localStorage.getItem(key);
+    if (stored) {
+      setGuestName(stored);
+    }
+  }, [eventId]);
+
+  useEffect(() => {
+    if (!eventId) return;
+    const key = `pov-guest-name:${eventId}`;
+    if (guestName.trim()) {
+      window.localStorage.setItem(key, guestName.trim());
+    }
+  }, [eventId, guestName]);
+
   async function handleUpload() {
     if (!eventData || selectedFiles.length === 0) return;
     try {
@@ -106,6 +125,7 @@ export default function JoinEventPage() {
       setEventData(refreshedJson);
       setSuccessMessage(`Awesome! ${selectedFiles.length} photo${selectedFiles.length > 1 ? "s" : ""} uploaded.`);
       setSelectedFiles([]);
+      setCameraInputKey((v) => v + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -154,126 +174,136 @@ export default function JoinEventPage() {
         ) : error ? (
           <Card className="p-6 text-red-200">{error}</Card>
         ) : eventData ? (
-          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-            <div className="space-y-6">
-              <Card className="p-6">
-                <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">POV Join</p>
-                <h1 className="mt-3 text-3xl font-semibold">{eventData.event.title}</h1>
-                <p className="mt-2 text-sm text-neutral-400">{eventData.event.date || "Date TBD"}</p>
-                {eventData.event.description ? <p className="mt-4 text-sm text-neutral-300">{eventData.event.description}</p> : null}
-              </Card>
-
-              <Card className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="text-sm text-neutral-400">Photo challenge</div>
-                    <div className="mt-2 text-2xl font-semibold">Capture {target} moments</div>
-                    <div className="mt-2 text-sm text-neutral-400">Every upload goes straight to the event folder in Google Drive.</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-right">
-                    <div className="text-xs text-neutral-500">Uploaded</div>
-                    <div className="text-xl font-semibold">{uploadedCount} / {target}</div>
-                  </div>
+          <div className="space-y-6">
+            <Card className="p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">POV Join</p>
+                  <h1 className="mt-3 text-3xl font-semibold">{eventData.event.title}</h1>
+                  {eventData.event.description ? <p className="mt-3 text-sm text-neutral-300">{eventData.event.description}</p> : null}
                 </div>
-                <div className="mt-4 h-3 rounded-full bg-white/5">
-                  <div className="h-full rounded-full bg-white" style={{ width: `${progress}%` }} />
+                <div className="shrink-0 rounded-3xl border border-white/10 bg-black/20 p-4 text-center">
+                  <div
+                    className="mx-auto grid h-20 w-20 place-items-center rounded-full"
+                    style={{
+                      background: `conic-gradient(#22c55e ${progress * 3.6}deg, rgba(255,255,255,0.08) 0deg)`,
+                    }}
+                  >
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-black text-sm font-semibold text-white">
+                      {progress}%
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-neutral-400">Your shots</div>
+                  <div className="text-xs text-neutral-500">{guestPhotos.length} / {target}</div>
+                </div>
+              </div>
+
+              {currentPrompt ? (
+                <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-5">
+                  <div className="text-xs uppercase tracking-[0.3em] text-neutral-500">Random Prompt</div>
+                  <div className="mt-3 text-lg font-medium">{currentPrompt}</div>
+                  <Button variant="secondary" className="mt-4" onClick={() => setPromptIndex((v) => v + 1)}>
+                    Next prompt
+                  </Button>
+                </div>
+              ) : null}
+            </Card>
+
+            <Card className="p-6">
+              <h2 className="text-2xl font-semibold">Upload photos</h2>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm text-neutral-400">Name</label>
+                  <Input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Vasanth" />
                 </div>
 
-                {currentPrompt ? (
-                  <div className="mt-5 rounded-3xl border border-white/10 bg-black/20 p-5">
-                    <div className="text-xs uppercase tracking-[0.3em] text-neutral-500">Random Prompt</div>
-                    <div className="mt-3 text-lg font-medium">{currentPrompt}</div>
-                    <Button variant="secondary" className="mt-4" onClick={() => setPromptIndex((v) => v + 1)}>
-                      Next prompt
+                <div>
+                  <label className="mb-2 block text-sm text-neutral-400">Click photo</label>
+                  <label className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-black/30">
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20 text-emerald-300">
+                      <Camera size={20} />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium text-neutral-100">Open camera</div>
+                      <div className="text-xs text-neutral-500">Capture moments live from your phone camera</div>
+                    </div>
+                    <input
+                      key={cameraInputKey}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="sr-only"
+                      onChange={(e) => handleCameraCapture(e.target.files)}
+                    />
+                  </label>
+                </div>
+
+                {selectedFiles.length > 0 ? (
+                  <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                    <div className="text-sm text-neutral-400">Captured photos</div>
+                    <div className="mt-3 space-y-2">
+                      {selectedFiles.map((file) => (
+                        <div key={`${file.name}-${file.size}`} className="flex items-center justify-between text-sm text-neutral-200">
+                          <span className="truncate">{file.name}</span>
+                          <span className="text-neutral-500">{formatBytes(file.size)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="secondary" className="mt-3" onClick={() => setSelectedFiles([])}>
+                      Clear captured photos
                     </Button>
                   </div>
                 ) : null}
-              </Card>
 
-              <Card className="p-6">
-                <h2 className="text-2xl font-semibold">Upload photos</h2>
-                <div className="mt-4 space-y-4">
-                  <div>
-                    <label className="mb-2 block text-sm text-neutral-400">Your name or nickname</label>
-                    <Input value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Vasanth" />
+                <Button onClick={handleUpload} disabled={uploading || selectedFiles.length === 0 || !guestName.trim()}>
+                  {uploading ? "Uploading..." : "Upload to Drive"}
+                </Button>
+                {successMessage ? <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">{successMessage}</div> : null}
+                {error ? <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <h2 className="text-2xl font-semibold">Your photo wall</h2>
+              <p className="mt-1 text-sm text-neutral-400">Only photos uploaded with your name appear here.</p>
+              <div className="mt-4 space-y-3">
+                {!guestKey ? (
+                  <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">
+                    Enter your name to start your personal photo wall.
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm text-neutral-400">Take photo now</label>
-                    <Input type="file" accept="image/*" capture="environment" onChange={(e) => handleCameraCapture(e.target.files)} />
-                    <p className="mt-2 text-xs text-neutral-500">
-                      This opens your camera so guests can click photos on the spot. Tap again to capture more.
-                    </p>
+                ) : guestPhotos.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">
+                    No uploads from you yet. Capture your first shot and build your wall.
                   </div>
-
-                  {selectedFiles.length > 0 ? (
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                      <div className="text-sm text-neutral-400">Captured photos</div>
-                      <div className="mt-3 space-y-2">
-                        {selectedFiles.map((file) => (
-                          <div key={`${file.name}-${file.size}`} className="flex items-center justify-between text-sm text-neutral-200">
-                            <span>{file.name}</span>
-                            <span className="text-neutral-500">{formatBytes(file.size)}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <Button variant="secondary" className="mt-3" onClick={() => setSelectedFiles([])}>
-                        Clear captured photos
-                      </Button>
-                    </div>
-                  ) : null}
-
-                  <Button onClick={handleUpload} disabled={uploading || selectedFiles.length === 0}>
-                    {uploading ? "Uploading..." : "Upload to Drive"}
-                  </Button>
-                  {successMessage ? <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">{successMessage}</div> : null}
-                  {error ? <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
-                </div>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <Card className="p-6">
-                <h2 className="text-2xl font-semibold">Your live photo wall</h2>
-                <p className="mt-1 text-sm text-neutral-400">Only photos uploaded with your nickname appear here.</p>
-                <div className="mt-4 space-y-3">
-                  {!guestKey ? (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">
-                      Enter your nickname to start your personal photo wall.
-                    </div>
-                  ) : guestPhotos.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-neutral-500">
-                      No uploads from you yet. Capture your first shot and build your wall.
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      {guestPhotos.map((photo, index) => (
-                        <a
-                          key={photo.fileId}
-                          href={photo.webViewLink || `/api/photos/${photo.fileId}`}
-                          target="_blank"
-                          className={`group block overflow-hidden rounded-2xl border border-white/10 bg-black/20 transition hover:-translate-y-0.5 hover:bg-black/30 ${
-                            index % 5 === 0 ? "sm:col-span-2" : ""
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {guestPhotos.map((photo, index) => (
+                      <a
+                        key={photo.fileId}
+                        href={photo.webViewLink || `/api/photos/${photo.fileId}`}
+                        target="_blank"
+                        className={`group block overflow-hidden rounded-2xl border border-white/10 bg-black/20 transition hover:-translate-y-0.5 hover:bg-black/30 ${
+                          index % 5 === 0 ? "sm:col-span-2" : ""
+                        }`}
+                      >
+                        <img
+                          src={`/api/photos/${photo.fileId}`}
+                          alt={photo.fileName}
+                          loading="lazy"
+                          className={`w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
+                            index % 5 === 0 ? "h-52" : "h-36"
                           }`}
-                        >
-                          <img
-                            src={`/api/photos/${photo.fileId}`}
-                            alt={photo.fileName}
-                            loading="lazy"
-                            className={`w-full object-cover transition duration-300 group-hover:scale-[1.03] ${
-                              index % 5 === 0 ? "h-52" : "h-36"
-                            }`}
-                          />
-                          <div className="p-3">
-                            <div className="truncate text-sm font-medium text-neutral-200">{photo.fileName}</div>
-                            <div className="mt-1 text-xs text-neutral-500">{photo.createdTime ? new Date(photo.createdTime).toLocaleString() : "Uploaded"}</div>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            </div>
+                        />
+                        <div className="p-3">
+                          <div className="truncate text-sm font-medium text-neutral-200">{photo.fileName}</div>
+                          <div className="mt-1 text-xs text-neutral-500">{photo.createdTime ? new Date(photo.createdTime).toLocaleString() : "Uploaded"}</div>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
         ) : null}
       </Container>
