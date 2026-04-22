@@ -176,31 +176,34 @@ export default function JoinEventPage() {
         ) : eventData ? (
           <div className="space-y-6">
             <Card className="p-6">
-              <div className="flex items-start justify-between gap-4">
+              <div className="space-y-5">
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">POV Join</p>
                   <h1 className="mt-3 text-3xl font-semibold">{eventData.event.title}</h1>
                   {eventData.event.description ? <p className="mt-3 text-sm text-neutral-300">{eventData.event.description}</p> : null}
                 </div>
-                <div className="shrink-0 rounded-3xl border border-white/10 bg-black/20 p-4 text-center">
+                <div className="inline-flex items-center gap-4 rounded-3xl border border-white/10 bg-black/20 px-4 py-3">
                   <div
-                    className="mx-auto grid h-20 w-20 place-items-center rounded-full"
+                    className="grid h-16 w-16 place-items-center rounded-full"
                     style={{
                       background: `conic-gradient(#22c55e ${progress * 3.6}deg, rgba(255,255,255,0.08) 0deg)`,
                     }}
                   >
-                    <div className="grid h-14 w-14 place-items-center rounded-full bg-black text-sm font-semibold text-white">
+                    <div className="grid h-11 w-11 place-items-center rounded-full bg-black text-xs font-semibold text-white">
                       {progress}%
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-neutral-400">Your shots</div>
-                  <div className="text-xs text-neutral-500">{guestPhotos.length} / {target}</div>
+                  <div>
+                    <div className="text-xs text-neutral-400">Your shots</div>
+                    <div className="text-sm font-medium text-neutral-200">{guestPhotos.length} / {target}</div>
+                  </div>
                 </div>
               </div>
             </Card>
 
             <Card className="p-6">
-              <h2 className="text-2xl font-semibold">Upload photos</h2>
+              <h2 className="text-2xl font-semibold">Capture & contribute</h2>
+              <p className="mt-1 text-sm text-neutral-400">Add fresh moments to the shared wall in just a few taps.</p>
               <div className="mt-4 space-y-4">
                 <div>
                   <label className="mb-2 block text-sm text-neutral-400">Name</label>
@@ -208,14 +211,15 @@ export default function JoinEventPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm text-neutral-400">Click photo</label>
-                  <label className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-4 transition hover:bg-black/30">
-                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20 text-emerald-300">
+                  <label className="mb-2 block text-sm text-neutral-400">Take a live shot</label>
+                  <label className="group relative flex cursor-pointer items-center gap-3 overflow-hidden rounded-2xl border border-white/15 bg-black/20 p-4 transition hover:border-emerald-400/40 hover:bg-black/30">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(16,185,129,0.18),transparent_45%)] opacity-70 transition group-hover:opacity-100" />
+                    <div className="relative grid h-10 w-10 place-items-center rounded-xl bg-emerald-500/20 text-emerald-300">
                       <Camera size={20} />
                     </div>
-                    <div>
-                      <div className="text-sm font-medium text-neutral-100">Open camera</div>
-                      <div className="text-xs text-neutral-500">Capture moments live from your phone camera</div>
+                    <div className="relative">
+                      <div className="text-sm font-medium text-neutral-100">Launch camera booth</div>
+                      <div className="text-xs text-neutral-400">Snap now, review your picks, and publish when ready.</div>
                     </div>
                     <input
                       key={cameraInputKey}
@@ -246,7 +250,7 @@ export default function JoinEventPage() {
                 ) : null}
 
                 <Button onClick={handleUpload} disabled={uploading || selectedFiles.length === 0 || !guestName.trim()}>
-                  {uploading ? "Uploading..." : "Upload to Drive"}
+                  {uploading ? "Uploading..." : "Add to photo wall"}
                 </Button>
                 {successMessage ? <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-200">{successMessage}</div> : null}
                 {error ? <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-200">{error}</div> : null}
