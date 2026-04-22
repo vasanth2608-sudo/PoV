@@ -3,8 +3,204 @@
 @tailwind utilities;
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0a0a0a; color: white; }
+html, body { margin: 0; padding: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #edf8e9; color: #050505; }
 a { color: inherit; text-decoration: none; }
 button, input, textarea { font: inherit; }
 img { max-width: 100%; height: auto; }
 pre { white-space: pre-wrap; word-break: break-word; }
+
+.capture-dock {
+  isolation: isolate;
+}
+
+.capture-dock::before {
+  background: linear-gradient(90deg, transparent, rgba(0, 196, 95, 0.22), transparent);
+  content: "";
+  height: 1px;
+  left: -30%;
+  position: absolute;
+  top: 22%;
+  width: 40%;
+  animation: pov-scan 3.2s ease-in-out infinite;
+}
+
+.capture-dock::after {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 42px 42px;
+  content: "";
+  inset: 0;
+  opacity: 0.22;
+  pointer-events: none;
+  position: absolute;
+  mask-image: radial-gradient(circle at 74% 50%, black, transparent 62%);
+}
+
+.capture-shutter {
+  animation: pov-breathe 2.8s ease-in-out infinite;
+}
+
+.capture-shutter::before,
+.capture-shutter::after {
+  border: 1px solid rgba(0, 196, 95, 0.3);
+  border-radius: 999px;
+  content: "";
+  inset: -10px;
+  position: absolute;
+}
+
+.capture-shutter::after {
+  animation: pov-ring 2.8s ease-out infinite;
+}
+
+.status-dot {
+  animation: pov-dot 1.8s ease-in-out infinite;
+}
+
+.queue-empty {
+  position: relative;
+}
+
+.queue-empty::before {
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: translateX(-100%);
+  animation: pov-sheen 4s ease-in-out infinite;
+}
+
+.queue-icon {
+  animation: pov-float 3s ease-in-out infinite;
+}
+
+.queued-shot {
+  animation: pov-rise 240ms ease-out both;
+}
+
+.polaroid-shot {
+  border: 1px solid rgba(5, 5, 5, 0.08);
+  border-radius: 1.35rem;
+}
+
+.capture-flash {
+  animation: pov-shutter-flash 460ms ease-out forwards;
+}
+
+.publish-burst {
+  animation: pov-publish-burst 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.moment-marquee {
+  overflow: hidden;
+}
+
+.moment-marquee-track {
+  animation: pov-marquee 12s linear infinite;
+  display: flex;
+  gap: 1rem;
+  min-width: max-content;
+}
+
+.moment-stage {
+  isolation: isolate;
+}
+
+.moment-stage::before {
+  background: linear-gradient(110deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  content: "";
+  height: 100%;
+  left: -80%;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  transform: skewX(-18deg);
+  width: 44%;
+  animation: pov-stage-gloss 5.5s ease-in-out infinite;
+}
+
+.moment-orbit {
+  animation: pov-orbit 10s linear infinite;
+}
+
+@keyframes pov-scan {
+  0%, 45% { transform: translateX(0); opacity: 0; }
+  52% { opacity: 1; }
+  100% { transform: translateX(330%); opacity: 0; }
+}
+
+@keyframes pov-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+
+@keyframes pov-ring {
+  0% { opacity: 0.5; transform: scale(0.9); }
+  70%, 100% { opacity: 0; transform: scale(1.22); }
+}
+
+@keyframes pov-dot {
+  0%, 100% { opacity: 0.55; box-shadow: 0 0 0 0 rgba(0, 196, 95, 0.38); }
+  50% { opacity: 1; box-shadow: 0 0 0 6px rgba(0, 196, 95, 0); }
+}
+
+@keyframes pov-sheen {
+  0%, 55% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes pov-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes pov-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pov-shutter-flash {
+  0% { opacity: 0; }
+  18% { opacity: 0.84; }
+  100% { opacity: 0; }
+}
+
+@keyframes pov-publish-burst {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(-5deg) scale(0.62); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(12vw, -74vh, 0) rotate(14deg) scale(1.08); }
+}
+
+@keyframes pov-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes pov-stage-gloss {
+  0%, 50% { transform: translateX(0) skewX(-18deg); opacity: 0; }
+  62% { opacity: 0.55; }
+  100% { transform: translateX(420%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes pov-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capture-dock::before,
+  .capture-shutter,
+  .capture-shutter::after,
+  .status-dot,
+  .queue-empty::before,
+  .queue-icon,
+  .queued-shot,
+  .capture-flash,
+  .publish-burst,
+  .moment-marquee-track,
+  .moment-stage::before,
+  .moment-orbit {
+    animation: none;
+  }
+}
