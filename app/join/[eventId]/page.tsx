@@ -164,8 +164,8 @@ export default function JoinEventPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#edf8e9] text-[#050505]">
-      <div className="mx-auto max-w-6xl px-4 py-8 md:px-6">
+    <div className="min-h-screen overflow-x-hidden bg-[#edf8e9] text-[#050505]">
+      <div className="mx-auto w-full max-w-6xl px-3 py-5 sm:px-4 md:px-6 md:py-8">
         {showCelebration ? (
           <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
             {Array.from({ length: 36 }).map((_, index) => (
@@ -196,48 +196,48 @@ export default function JoinEventPage() {
         ) : error ? (
           <Card className="p-6 text-red-200">{error}</Card>
         ) : eventData ? (
-          <div className="space-y-5 pb-28">
-            <div className="grid gap-4 rounded-[2rem] border border-black/10 bg-white/45 p-5 shadow-[0_18px_60px_rgba(53,70,48,0.08)] backdrop-blur md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6">
+          <div className="space-y-4 pb-28 md:space-y-5">
+            <div className="grid min-w-0 gap-4 rounded-[1.5rem] border border-black/10 bg-white/45 p-4 shadow-[0_18px_60px_rgba(53,70,48,0.08)] backdrop-blur sm:rounded-[2rem] md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-6">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase text-[#6f6a61]">POV Join</p>
-                <h1 className="mt-2 max-w-3xl text-4xl font-semibold leading-none text-[#050505] md:text-5xl">{eventData.event.title}</h1>
+                <h1 className="mt-2 max-w-3xl break-words text-4xl font-semibold leading-[0.95] text-[#050505] sm:text-5xl">{eventData.event.title}</h1>
                 {eventData.event.description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-[#565047]">{eventData.event.description}</p> : null}
               </div>
-              <div className="w-full rounded-[1.5rem] border border-black/10 bg-[#f7f3ea]/80 p-4 text-[#050505] shadow-[0_14px_36px_rgba(0,0,0,0.06)] md:w-auto">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="text-xs font-semibold uppercase text-[#6f6a61]">Your shots</div>
-                      <div className="rounded-full bg-[#00c45f]/14 px-2.5 py-1 text-xs font-semibold text-[#008f48]">
-                        {Math.round((guestPhotos.length / target) * 100)}%
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="flex min-w-0 items-center gap-1 rounded-full border border-black/10 bg-[#f3efe4] px-3 py-2" aria-hidden="true">
-                        {Array.from({ length: shotSegments }).map((_, index) => (
-                          <span
-                            // eslint-disable-next-line react/no-array-index-key
-                            key={index}
-                            className={`h-3 w-2 rounded-[2px] transition-colors ${index < filledShotSegments ? "bg-[#00c45f]" : "bg-black/10"}`}
-                          />
-                        ))}
-                      </div>
-                      <div className="whitespace-nowrap text-sm font-semibold text-[#050505]">
-                        {guestPhotos.length} / {target} shots
-                      </div>
+              <div className="min-w-0 rounded-[1.5rem] border border-black/10 bg-[#f7f3ea]/80 p-4 text-[#050505] shadow-[0_14px_36px_rgba(0,0,0,0.06)] md:w-auto">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="text-xs font-semibold uppercase text-[#6f6a61]">Your shots</div>
+                    <div className="rounded-full bg-[#00c45f]/14 px-2.5 py-1 text-xs font-semibold text-[#008f48]">
+                      {Math.round((guestPhotos.length / target) * 100)}%
                     </div>
                   </div>
+                  <div className="mt-3 grid min-w-0 gap-3 sm:flex sm:items-center">
+                    <div className="flex w-full min-w-0 items-center justify-between gap-1 overflow-hidden rounded-full border border-black/10 bg-[#f3efe4] px-3 py-2 sm:w-72" aria-hidden="true">
+                      {Array.from({ length: shotSegments }).map((_, index) => (
+                        <span
+                          // eslint-disable-next-line react/no-array-index-key
+                          key={index}
+                          className={`h-3 w-2 shrink-0 rounded-[2px] transition-colors ${index < filledShotSegments ? "bg-[#00c45f]" : "bg-black/10"}`}
+                        />
+                      ))}
+                    </div>
+                    <div className="whitespace-nowrap text-sm font-semibold text-[#050505]">
+                      {guestPhotos.length} / {target} shots
+                    </div>
+                  </div>
+                </div>
             </div>
 
             <Card className="overflow-hidden !border-black/10 !bg-[#f7f3ea] !shadow-[0_18px_60px_rgba(53,70,48,0.1)] p-0">
-              <div className="grid items-stretch gap-0 bg-white/35 lg:grid-cols-[minmax(0,1.05fr)_minmax(410px,0.52fr)]">
-                <div className="flex min-h-full flex-col p-6 text-[#050505] md:p-7">
+              <div className="grid min-w-0 items-stretch gap-0 bg-white/35 lg:grid-cols-[minmax(0,1.05fr)_minmax(410px,0.52fr)]">
+                <div className="flex min-h-full min-w-0 flex-col p-4 text-[#050505] sm:p-6 md:p-7">
                   <div className="flex min-h-20 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <div className="inline-flex items-center rounded-full border border-white/60 bg-white/35 px-3 py-1.5 text-[11px] font-semibold uppercase text-[#006f38] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur">
                         01 Capture
                       </div>
-                      <h2 className="mt-4 text-4xl font-semibold leading-[0.98] md:text-[2.75rem]">Create a moment</h2>
+                      <h2 className="mt-4 break-words text-4xl font-semibold leading-[0.98] md:text-[2.75rem]">Create a moment</h2>
                     </div>
-                    <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#050505] shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+                    <div className="flex w-fit max-w-full items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#050505] shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
                       <ImagePlus size={15} className="text-[#00c45f]" />
                       <span>{hasQueuedShots ? `${queuedShotLabel} ready` : "0 ready"}</span>
                     </div>
@@ -254,10 +254,10 @@ export default function JoinEventPage() {
                       />
                     </div>
 
-                    <label className="moment-stage group relative flex min-h-[20rem] cursor-pointer flex-col overflow-hidden rounded-[2rem] border border-black/10 bg-[#eef8ea] transition duration-300 hover:-translate-y-0.5 hover:border-[#00c45f]/50 hover:shadow-[0_30px_90px_rgba(0,0,0,0.14)] lg:min-h-[22rem]">
+                    <label className="moment-stage group relative flex min-h-[22rem] cursor-pointer flex-col overflow-hidden rounded-[1.5rem] border border-black/10 bg-[#eef8ea] transition duration-300 hover:-translate-y-0.5 hover:border-[#00c45f]/50 hover:shadow-[0_30px_90px_rgba(0,0,0,0.14)] sm:rounded-[2rem] md:min-h-[20rem] lg:min-h-[22rem]">
                       {captureFlash ? <span className="capture-flash pointer-events-none absolute inset-0 z-20 bg-white" /> : null}
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_36%,rgba(255,255,255,0.9),transparent_18%),radial-gradient(circle_at_72%_55%,rgba(0,196,95,0.2),transparent_31%),linear-gradient(135deg,rgba(255,255,255,0.55),transparent_45%)]" />
-                      <div className="relative flex min-h-full flex-col justify-between p-6 md:p-7">
+                      <div className="relative flex min-h-full min-w-0 flex-col justify-between p-5 sm:p-6 md:p-7">
                         <div className="flex items-start justify-between gap-4">
                           <div className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold uppercase text-[#050505]">
                             <span className="status-dot h-1.5 w-1.5 rounded-full bg-[#00c45f]" />
@@ -268,23 +268,23 @@ export default function JoinEventPage() {
                           </div>
                         </div>
 
-                        <div className="grid flex-1 items-center gap-6 py-6 md:grid-cols-[minmax(0,1fr)_190px]">
+                        <div className="grid flex-1 items-center gap-5 py-6 md:grid-cols-[minmax(0,1fr)_170px] lg:grid-cols-[minmax(0,1fr)_190px]">
                           <div className="min-w-0">
-                            <div className="max-w-lg text-4xl font-semibold leading-[0.98] text-[#050505] md:text-5xl">
+                            <div className="max-w-lg break-words text-4xl font-semibold leading-[0.98] text-[#050505] md:text-5xl">
                               {hasQueuedShots ? "Keep shooting." : "Tap to shoot."}
                             </div>
-                            <div className="mt-4 max-w-md text-sm leading-6 text-[#565047]">
+                            <div className="mt-4 max-w-md break-words text-sm leading-6 text-[#565047]">
                               {hasQueuedShots
                                 ? `${queuedShotLabel} waiting in your private queue.`
                                 : "Open the camera, capture the moment, review it, then publish."}
                             </div>
                           </div>
-                          <div className="relative mx-auto grid h-40 w-40 place-items-center">
+                          <div className="relative mx-auto grid h-32 w-32 place-items-center sm:h-40 sm:w-40">
                             <div className="moment-orbit absolute inset-0 rounded-full border border-dashed border-[#00c45f]/25" />
                             <div className="absolute inset-5 rounded-full border border-black/10" />
-                            <div className="capture-shutter relative grid h-24 w-24 place-items-center rounded-full border border-black/10 bg-white/60 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.4)] transition group-hover:border-[#00c45f]/50">
-                              <div className="relative z-10 grid h-16 w-16 place-items-center rounded-full bg-white text-[#050505] shadow-[0_18px_50px_rgba(0,0,0,0.12)] transition group-hover:scale-105">
-                                <Camera size={26} />
+                            <div className="capture-shutter relative grid h-20 w-20 place-items-center rounded-full border border-black/10 bg-white/60 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.4)] transition group-hover:border-[#00c45f]/50 sm:h-24 sm:w-24">
+                              <div className="relative z-10 grid h-14 w-14 place-items-center rounded-full bg-white text-[#050505] shadow-[0_18px_50px_rgba(0,0,0,0.12)] transition group-hover:scale-105 sm:h-16 sm:w-16">
+                                <Camera size={24} />
                               </div>
                             </div>
                           </div>
@@ -317,21 +317,21 @@ export default function JoinEventPage() {
                   </div>
                 </div>
 
-                <div className="flex min-h-full flex-col border-t border-black/10 bg-[#eef8ea]/70 p-6 text-[#050505] lg:border-l lg:border-t-0 md:p-7">
+                <div className="flex min-h-full min-w-0 flex-col border-t border-black/10 bg-[#eef8ea]/70 p-4 text-[#050505] sm:p-6 lg:border-l lg:border-t-0 md:p-7">
                   <div className="flex min-h-20 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <div className="inline-flex items-center rounded-full border border-white/60 bg-white/35 px-3 py-1.5 text-[11px] font-semibold uppercase text-[#006f38] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] backdrop-blur">
                         02 Queue
                       </div>
-                      <h3 className="mt-4 text-4xl font-semibold leading-[0.98] text-[#050505] md:text-[2.75rem]">Shot queue</h3>
-                      <p className="mt-2 text-sm text-[#565047]">{hasQueuedShots ? `${queuedShotLabel} ready to publish` : "Waiting for the first shot"}</p>
+                      <h3 className="mt-4 break-words text-4xl font-semibold leading-[0.98] text-[#050505] md:text-[2.75rem]">Shot queue</h3>
+                      <p className="mt-2 break-words text-sm text-[#565047]">{hasQueuedShots ? `${queuedShotLabel} ready to publish` : "Waiting for the first shot"}</p>
                     </div>
                     <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/70 text-[#050505] shadow-[0_12px_32px_rgba(0,0,0,0.06)] backdrop-blur">
                         <UploadCloud size={20} />
                     </div>
                   </div>
 
-                  <div className="mt-5 flex min-h-[20rem] rounded-[2rem] border border-black/10 bg-white/65 p-3 lg:min-h-[22rem]">
+                  <div className="mt-5 flex min-h-[18rem] min-w-0 rounded-[1.5rem] border border-black/10 bg-white/65 p-3 sm:rounded-[2rem] lg:min-h-[22rem]">
                     {hasQueuedShots ? (
                       <div className="grid flex-1 grid-cols-2 content-start gap-4 sm:grid-cols-3 lg:grid-cols-2">
                         {queuedPreviews.map((preview, index) => (
@@ -374,18 +374,18 @@ export default function JoinEventPage() {
             </Card>
 
             <Card className="overflow-hidden !border-black/10 !bg-[#f7f3ea] !shadow-[0_18px_60px_rgba(53,70,48,0.1)] p-0 text-[#050505]">
-              <div className="flex flex-col gap-3 border-b border-black/10 p-6 sm:flex-row sm:items-end sm:justify-between md:p-7">
-                <div>
+              <div className="flex flex-col gap-3 border-b border-black/10 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-6 md:p-7">
+                <div className="min-w-0">
                   <div className="inline-flex items-center rounded-full border border-[#00c45f]/20 bg-[#00c45f]/12 px-3 py-1.5 text-[11px] font-semibold uppercase text-[#006f38]">
                     03 Gallery
                   </div>
-                  <h2 className="mt-4 text-4xl font-semibold leading-[0.98] text-[#050505] md:text-[2.75rem]">Your photo wall</h2>
+                  <h2 className="mt-4 break-words text-4xl font-semibold leading-[0.98] text-[#050505] md:text-[2.75rem]">Your photo wall</h2>
                 </div>
                 <div className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-semibold text-[#050505]">
                   {guestPhotos.length} personal upload{guestPhotos.length === 1 ? "" : "s"}
                 </div>
               </div>
-              <div className="space-y-3 p-6 md:p-7">
+              <div className="space-y-3 p-4 sm:p-6 md:p-7">
                 {!guestKey ? (
                   <div className="rounded-[2rem] border border-dashed border-black/10 bg-white/50 p-4">
                     <div className="grid grid-cols-3 gap-3">
