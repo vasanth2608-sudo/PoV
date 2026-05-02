@@ -31,8 +31,15 @@ export async function POST(request: Request) {
       folderUrl: `https://drive.google.com/drive/folders/${event.folderId}`,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to create event.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const normalized = normalizeCreateEventError(error);
+    console.error("[api/events/create] failed", normalized.log);
+    return NextResponse.json(
+      {
+        error: normalized.message,
+        code: normalized.code,
+      },
+      { status: normalized.status }
+    );
   }
 }
 
@@ -52,4 +59,68 @@ function resolveBaseUrl(request: Request): string {
   } catch {
     return appUrl;
   }
+}
+
+type NormalizedCreateEventError = {
+  status: number;
+  code: string;
+  message: string;
+  log: Record<string, unknown>;
+};
+
+function normalizeCreateEventError(error: unknown): NormalizedCreateEventError {
+  const errObj = asRecord(error);
+  const message = error instanceof Error ? error.message : "Failed to create event.";
+  const responseData = asRecord(errObj?.response?.data);
+  const responseStatus = typeof errObj?.response?.status === "number" ? errObj.response.status : undefined;
+  const apiErrorDescription =
+    typeof responseData?.error_description === "string" ? responseData.error_description : undefined;
+  const apiErrorCode = typeof responseData?.error === "string" ? responseData.error : undefined;
+
+  const lowered = `${message} ${apiErrorDescription || ""} ${apiErrorCode || ""}`.toLowerCase();
+
+  if (lowered.includes("missing environment variable")) {
+    return {
+      status: 500,
+      code: "CONFIG_MISSING_ENV",
+      message,
+      log: {
+        code: "CONFIG_MISSING_ENV",
+        message,
+      },
+    };
+  }
+
+  if (lowered.includes("invalid_grant") || lowered.includes("unauthorized_client") || lowered.includes("invalid_client")) {
+    return {
+      status: 502,
+      code: "GOOGLE_AUTH_FAILED",
+      message: "Google OAuth credentials are invalid or expired.",
+      log: {
+        code: "GOOGLE_AUTH_FAILED",
+        message,
+        apiErrorCode,
+        apiErrorDescription,
+        responseStatus,
+      },
+    };
+  }
+
+  return {
+    status: 500,
+    code: "EVENT_CREATE_FAILED",
+    message,
+    log: {
+      code: "EVENT_CREATE_FAILED",
+      message,
+      apiErrorCode,
+      apiErrorDescription,
+      responseStatus,
+    },
+  };
+}
+
+function asRecord(value: unknown): Record<string, any> | null {
+  if (!value || typeof value !== "object") return null;
+  return value as Record<string, any>;
 }
