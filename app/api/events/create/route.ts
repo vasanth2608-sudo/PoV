@@ -95,7 +95,8 @@ function normalizeCreateEventError(error: unknown): NormalizedCreateEventError {
     return {
       status: 502,
       code: "GOOGLE_AUTH_FAILED",
-      message: "Google OAuth credentials are invalid or expired.",
+      message:
+        "Google Drive authorization failed. Verify GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, and GOOGLE_REFRESH_TOKEN in your deployment settings.",
       log: {
         code: "GOOGLE_AUTH_FAILED",
         message,
