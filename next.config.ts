@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
           },
         ],
         destination: "https://po-v-six.vercel.app/join/:path*",
-        permanent: false,
+        permanent: true,
       },
     ];
   },
