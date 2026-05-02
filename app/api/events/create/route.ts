@@ -22,8 +22,7 @@ export async function POST(request: Request) {
       prompts: parsePrompts(parsed.promptsText),
     });
 
-    const requestOrigin = new URL(request.url).origin;
-    const baseUrl = requestOrigin || appUrl;
+    const baseUrl = resolveBaseUrl(request);
 
     return NextResponse.json({
       id: event.id,
@@ -34,5 +33,23 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to create event.";
     return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+
+function resolveBaseUrl(request: Request): string {
+  const headerOrigin = request.headers.get("origin");
+  if (headerOrigin) return headerOrigin;
+
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (host) {
+    const proto = request.headers.get("x-forwarded-proto") ?? "https";
+    return `${proto}://${host}`;
+  }
+
+  try {
+    return new URL(request.url).origin;
+  } catch {
+    return appUrl;
   }
 }
